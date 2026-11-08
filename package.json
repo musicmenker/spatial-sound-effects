@@ -1,0 +1,43 @@
+{
+  "name": "spatial-sound-effects",
+  "private": true,
+  "version": "0.0.3",
+  "type": "module",
+  "description": "MusicMenker 立体音響風エフェクター Web / Tauri 2 desktop (v0.0.2.1)",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test tests/*.test.js",
+    "check:syntax": "node scripts/check-syntax.js",
+    "tauri": "tauri",
+    "tauri:dev": "npm run icons && tauri dev",
+    "tauri:build": "npm run icons && tauri build",
+    "icons": "tauri icon src-tauri/icon-source.png",
+    "check:offline": "node scripts/check-offline.js",
+    "check:versions": "node scripts/check-versions.js"
+  },
+  "dependencies": {
+    "@alpinejs/persist": "^3.14.9",
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0",
+    "ajv": "^8.17.1",
+    "alpinejs": "^3.14.9",
+    "dexie": "^4.0.11",
+    "fourier-transform": "2.5.1",
+    "i18next": "^25.0.0",
+    "jszip": "^3.10.1",
+    "sortablejs": "^1.15.6",
+    "tone": "^15.1.22",
+    "wavefile": "^11.0.0",
+    "wavesurfer.js": "^8.0.2"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0",
+    "@tauri-apps/cli": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
