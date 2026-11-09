@@ -8,12 +8,12 @@ const perms=JSON.parse(read('src-tauri/capabilities/default.json'));
 const pkg=JSON.parse(read('package.json'));
 
 test('Web and desktop metadata are MusicMenker, with four-part public version',()=>{
-  assert.equal(pkg.version,'0.0.3');
-  assert.equal(conf.version,'0.0.3');
+  assert.equal(pkg.version,'0.0.5');
+  assert.equal(conf.version,'0.0.5');
   assert.equal(conf.bundle.publisher,'MusicMenker');
-  assert.match(read('src/data/effects.js'),/APP_VERSION = 'v0\.0\.2\.1'/);
+  assert.match(read('src/data/effects.js'),/APP_VERSION = 'v0\.0\.4\.0'/);
   assert.match(read('index.html'),/MusicMenker/);
-  assert.match(read('index.html'),/v0\.0\.2\.1/);
+  assert.match(read('index.html'),/v0\.0\.4\.0/);
 });
 test('Tauri distribution is locally bundled, using native permissions only',()=>{
   assert.equal(conf.build.frontendDist,'../dist');

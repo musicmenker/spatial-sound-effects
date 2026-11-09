@@ -1,3 +1,4 @@
+import {downloadBlob} from './download.js';
 /** MusicMenker platform file boundary. DSP and project serialization remain shared. */
 export function isDesktop(){
   return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__);
@@ -6,9 +7,10 @@ export function isDesktop(){
 const formats={
   audio:{name:'Audio',extensions:['wav','mp3','ogg','flac','m4a','aac','aif','aiff','opus']},
   project:{name:'MusicMenker Project',extensions:['json','zip']},
+  preset:{name:'MusicMenker Spatial Preset',extensions:['mmsse']},
   ir:{name:'Impulse response',extensions:['wav','flac','ogg','aif','aiff']}
 };
-export const MAX_NATIVE_INPUT={audio:220*1024*1024,project:250*1024*1024,ir:35*1024*1024};
+export const MAX_NATIVE_INPUT={audio:220*1024*1024,project:250*1024*1024,preset:1024*1024,ir:35*1024*1024};
 
 /** Return File or null (user canceled). On desktop native dialog scopes the selected path. */
 export async function openNativeFile(kind){
@@ -31,7 +33,6 @@ export async function openNativeFile(kind){
 export async function saveOutput(blob,name){
   if(!isDesktop()){
     // Browser downloads can't confirm the user's final save location.
-    const {downloadBlob}=await import('../audio/wav.js');
     downloadBlob(blob,name);
     return true;
   }
@@ -39,7 +40,7 @@ export async function saveOutput(blob,name){
     import('@tauri-apps/plugin-dialog'), import('@tauri-apps/plugin-fs')
   ]);
   const extension=name.toLowerCase().endsWith('.sse.zip')?'zip':name.toLowerCase().endsWith('.sse.json')?'json':name.split('.').pop().toLowerCase();
-  if(!['wav','zip','json'].includes(extension))throw new Error('保存形式が許可されていません。');
+  if(!['wav','zip','json','mmsse'].includes(extension))throw new Error('保存形式が許可されていません。');
   const selected=await save({defaultPath:name,filters:[{name:extension.toUpperCase(),extensions:[extension]}]});
   if(selected==null)return false;
   // No arbitrary path is accepted here: dialog plugin grants access to chosen file only.

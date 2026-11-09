@@ -2,7 +2,7 @@
 
 Frontend: Alpine.js, Tone.js, WaveSurfer.js, wavefile, Ajv, Dexie, JSZip, SortableJS, fourier-transform, i18next, Vite. Desktop layer: Tauri 2, official dialog/fs plugins, Rust. Versions and license details for existing packages are in `THIRD_PARTY.md`; Tauri is under the MIT/Apache-2.0 dual license, subject to exact dependency versions.
 
-For v0.0.2.1, `fourier-transform@2.5.1` replaces Meyda (see `MEYDA_REPLACEMENT.md`). The source package does **not** currently contain a generated `package-lock.json` or `src-tauri/Cargo.lock` because registry/crate resolution was unavailable in the preparation environment. These must be created from real package resolution, committed, and reviewed **before** enabling the CI release process. Do not fabricate hashes or lock entries. The version range entries in `package.json` are provisional until pinned by a lockfile.
+Since v0.0.2.1, `fourier-transform@2.5.1` replaces Meyda (see `MEYDA_REPLACEMENT.md`). The source package does **not** currently contain a generated `package-lock.json` or `src-tauri/Cargo.lock` because registry/crate resolution was unavailable in the preparation environment. These must be created from real package resolution, committed, and reviewed **before** enabling the CI release process. Do not fabricate hashes or lock entries. The version range entries in `package.json` are provisional until pinned by a lockfile.
 
 ## Prepare a reproducible build on a connected development machine
 

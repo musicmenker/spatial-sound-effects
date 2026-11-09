@@ -10,6 +10,7 @@ const previewEngine=new AudioEngine();
 let processedWave=null;
 let originalWave=null;
 let previewBuffer=null;
+export function getRenderedPreviewBuffer(){return previewBuffer;}
 let previewSignature='';
 const format=(n)=>`${String(Math.floor(n/60)).padStart(2,'0')}:${String(Math.floor(n%60)).padStart(2,'0')}`;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -18,9 +19,9 @@ const pick=(effects,id)=>effects.find(e=>e.id===id);
 export function studioV2(){
   const base=studio();
   return {...base,
-    version:'v0.0.2.1',
+    version:'v0.0.4.0',
     quick:{muffle:0,space:40,echo:0,far:0,width:0},
-    advanced:false,previewMode:'original',previewStatus:'未生成',previewReady:false,
+    advanced:false,previewMode:'processed',previewStatus:'未生成',previewReady:false,
     previewBusy:false,previewDirty:true,previewPlaying:false,previewPosition:0,
     previewDuration:0,compare:false,selectedSpace:'basement',showSave:false,
     get activePreset(){return PRESETS.find(p=>p.id===this.presetId);},
@@ -72,8 +73,8 @@ export function studioV2(){
       }
       this.changed();
     },
-    async loadAudio(file){await base.loadAudio.call(this,file);if(this.hasAudio){originalWave?.load(getStudioSourceBuffer());this.invalidatePreview();this.previewReady=false;this.previewMode='original';}},
-    async loadDemo(){await base.loadDemo.call(this);originalWave?.load(getStudioSourceBuffer());this.invalidatePreview();this.previewReady=false;this.previewMode='original';},
+    async loadAudio(file){const loaded=await base.loadAudio.call(this,file);if(loaded&&this.hasAudio){originalWave?.load(getStudioSourceBuffer());this.invalidatePreview();this.previewReady=false;this.previewMode='processed';}return loaded;},
+    async loadDemo(){await base.loadDemo.call(this);originalWave?.load(getStudioSourceBuffer());this.invalidatePreview();this.previewReady=false;this.previewMode='processed';},
     async playPause(){
       if(this.previewMode==='processed')return this.playProcessed();
       if(this.previewPlaying){previewEngine.pause();this.previewPlaying=false;}
@@ -84,11 +85,13 @@ export function studioV2(){
       if(!this.hasAudio)return this.notify('音源を読み込んでください。','error');
       if(this.previewBusy)return;
       this.stop();this.previewBusy=true;this.busy=true;this.busyMessage='加工済み音声を生成しています…';
+      this.reportWork?.('加工済み音声をレンダリング中',null);
       try{
         const settings=this.makeSettings();
         const signature=signatures(settings,this.irName);
         // Use the same rendering pipeline as WAV export.
                 const rendered=await this.renderCurrent();
+        if(this.isWorkCancelled?.()){this.previewStatus='生成をキャンセルしました';return;}
         previewBuffer=rendered;
         previewSignature=signature;
         await previewEngine.setAudioBuffer(rendered);
@@ -100,7 +103,7 @@ export function studioV2(){
         this.previewDuration=rendered.duration;this.previewPosition=0;
         this.previewReady=true;this.previewDirty=false;this.previewStatus='加工済み・試聴可能';this.previewMode='processed';
         this.notify('加工後の波形を生成しました。','success');
-      }catch(err){this.notify('加工プレビュー失敗: '+err.message,'error');}
+      }catch(err){if(!this.isWorkCancelled?.())this.notify('加工プレビュー失敗: '+err.message,'error');}
       finally{this.previewBusy=false;this.busy=false;this.busyMessage='';}
     },
     async renderCurrent(){return renderStudioAudio();},

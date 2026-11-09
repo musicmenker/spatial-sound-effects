@@ -14,7 +14,7 @@ const fmt=(n)=>(n>=0?'+':'')+Number(n).toFixed(1)+' dB';
 export function studioV3(){
   const base=studioV2();
   return {...base,
-    version:'v0.0.2.1',
+    version:'v0.0.4.0',
     // Object spreading the previous UI layer evaluates getters only once;
     // restore them here as live computed properties for Alpine reactivity.
     get visiblePresets(){return this.presets.filter(p=>(this.category==='すべて'||this.category===p.category)&&
@@ -135,11 +135,12 @@ export function studioV3(){
       await this.ensureCalibration(true).catch(e=>this.notify('補正計算: '+e.message,'error'));
     },
     async loadAudio(file){
-      await base.loadAudio.call(this,file);
-      if(!this.hasAudio)return;
+      const loaded=await base.loadAudio.call(this,file);
+      if(!loaded)return false;
       await this.setupOriginal();
       this.calibrationReady=false;
       await this.ensureCalibration(true).catch(e=>this.notify('音量補正: '+e.message,'error'));
+      return true;
     },
     async loadDemo(){
       await base.loadDemo.call(this);

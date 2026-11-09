@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=MusicMenker Spatial Sound Effects
+Name[ja]=MusicMenker 立体音響風エフェクター
+Comment=Audio spatial effects editor
+Comment[ja]=立体音響風エフェクター
+Exec=musicmenker-spatial-sound-effects
+Icon=musicmenker-spatial-sound-effects
+Terminal=false
+Categories=AudioVideo;Audio;
+StartupNotify=true

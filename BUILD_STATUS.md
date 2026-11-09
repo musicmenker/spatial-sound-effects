@@ -1,32 +1,27 @@
-# MusicMenker Spatial Sound Effects v0.0.2.1 — 検証状況
+# MusicMenker v0.0.4.0 — 検証とリリース状況
 
-## 実施済み（このZIPの作成環境）
+## 検証（このソース生成環境で実施）
 
-- Meydaのnpm依存・import・UI謝辞削除、fourier-transform@2.5.1への置換。
-- スペクトル重心の分析処理を独立モジュール化。
-- JS構文チェック22ファイル合格、バージョン整合・オフライン資産静的チェック合格。
-- 依存不要の単体・構成テスト20件すべて合格。
-- デザインLight規約、音響エンジン、WAV、保存処理は変更していない。
+- JavaScript/Node.js構文検査：**31/31合格**（`.mjs`配布スクリプトも対象）。
+- 公開版 `v0.0.4.0` とnpm/Cargo/Tauri内部版 `0.0.5` の整合検査：合格。
+- Bash構文：`build-install.sh`、Linux tar.gz／Archパッケージ化／Linux launcherを検査、合格。
+- GitHub Actions YAML：RubyのYAMLパーサーで構造を検査、合格。
+- 音響設定、既存UI、.mmsse、配布スクリプト等の依存不要なテスト群：**37件合格、1件スキップ（Windows Portable ZIPのJSZip依存が未導入）**。
+- Linux tar.gz：x86_64 ELFを使って実際にアーカイブを作成し、内容を展開一覧で確認。非ELFを拒否する異常系も合格。これは**アプリ本体のビルド試験ではなく**包装処理の試験です。
+- リリース署名・バージョン・11種類の成果物の存在確認：構造試験合格。実際のOSでインストール可能であることの保証ではありません。
 
-## 未実施・要検証
+## 未検証
 
-- この環境ではnpmレジストリがEAI_AGAINのため、npm install / npm audit / npm run buildは実行不可。
-- fourier-transformを実際にimportしてFFTが働く4件の統合テストはnpm install後に実施すること。
-- `npm test` の全24件は依存未取得のため未完了（依存未取得による失敗を機能の不具合と混同しない）。
-- Cargo/Rustのネイティブビルド、3OS実機テストは未実施。
-- npmおよびCargoロックファイルは実依存解決前であり同梱しない（捏造しない）。
-- npm auditが0件になるかどうかは利用者環境で検証を要する。
+- npmレジストリおよびRustクレートを取得する通信が利用できず、ここでは `npm install`、`npm audit`、Vite本番ビルド、Rustコンパイル、全44件の依存付きテストを完了できない。
+- GitHub ActionsでのFedora RPM、Arch pacman、Windows Installer／Portable、macOS Intel／ARM／Universalの実ビルドは未実施。
+- Windows Portable EXE内のWebView2データ保存場所の実動作、macOS Gatekeeper、各OSでのインストール／アンインストールは未検証。
+- 音声再生、加工後プレビュー、WAV保存、.mmsse永続保存の実機回帰テストは未実施。
+- `package-lock.json`、`src-tauri/Cargo.lock` はこのソースZIPには未同梱。実環境で生成・コミットが必要。
 
-## 利用者環境での必須コマンド
+## 先行版で確認された事実
 
-```sh
-npm install
-npm ls meyda deepmerge @rollup/plugin-node-resolve fourier-transform
-npm audit
-npm run check:syntax
-npm test
-npm run build
-WEBKIT_DISABLE_DMABUF_RENDERER=1 npm run tauri:dev
-```
+ユーザー環境ではv0.0.3.0に対してnpm監査0件、36/36テスト合格、Vite本番ビルド成功が報告されている。ただし、本版のRust変更や新パッケージ形式の動作確認を意味しない。
 
-なおTauri Linux実機では、既知のNVIDIA GBM描画エラーに対して上記の環境変数を利用する。
+## 配布判定
+
+本ZIPは**実装ソース（No-Test：ネイティブ配布物未検証）**。GitHub Actionsは成果物を自動生成し、タグ一致かつ必要な配布物が揃った場合だけGitHub Releaseのドラフトへ追加する。公開Releaseにする前に実機・音声・署名・ライセンスを検証する。

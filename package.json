@@ -1,9 +1,9 @@
 {
   "name": "spatial-sound-effects",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.5",
   "type": "module",
-  "description": "MusicMenker 立体音響風エフェクター Web / Tauri 2 desktop (v0.0.2.1)",
+  "description": "MusicMenker 立体音響風エフェクター Web / Tauri 2 desktop (v0.0.4.0)",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -15,7 +15,12 @@
     "tauri:build": "npm run icons && tauri build",
     "icons": "tauri icon src-tauri/icon-source.png",
     "check:offline": "node scripts/check-offline.js",
-    "check:versions": "node scripts/check-versions.js"
+    "check:versions": "node scripts/check-versions.js",
+    "package:linux-portable": "bash scripts/package-linux-portable.sh",
+    "package:arch": "bash scripts/package-arch.sh",
+    "package:windows-portable": "node scripts/package-windows-portable.mjs",
+    "package:collect": "node scripts/collect-artifacts.mjs",
+    "test:distribution": "node --test tests/distribution.test.js"
   },
   "dependencies": {
     "@alpinejs/persist": "^3.14.9",

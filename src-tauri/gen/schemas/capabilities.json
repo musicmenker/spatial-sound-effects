@@ -1,1 +1,0 @@
-{"main-capability":{"identifier":"main-capability","description":"Only user-selected audio, project and export files are accessible.","local":true,"windows":["main"],"permissions":["core:default","dialog:allow-open","dialog:allow-save","fs:default","fs:allow-stat","fs:allow-read-file","fs:allow-write-file"]}}

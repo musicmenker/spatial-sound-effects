@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v0.0.2.1';
+export const APP_VERSION = 'v0.0.4.0';
 export const PROJECT_FORMAT = 'sse-project-v1';
 export const MODULES = [
   { id:'filter', title:'周波数フィルター', en:'Frequency filter', desc:'低域と高域を整理して、壁越しや水中の音を再現', accent:'#8bbdff', controls:[
@@ -45,7 +45,7 @@ export const DEFAULT_EFFECTS = [
   {id:'surround',enabled:false,mode:'wide',width:65,speed:0.23,depth:75}
 ];
 export const DEFAULT_SETTINGS = {
-  masterDb:0, mix:100, normalize:false, bitDepth:'16', sampleRate:'source',
+  masterDb:0, mix:100, normalize:false, bitDepth:'24', sampleRate:'source',
   splitReverb:true,protectHighs:true,splitDistance:true,highLossIntentional:false,rawPlayback:false,
   dryLevel:100,wetLevel:40,distanceLevelDb:0,autoGain:true,autoGainDb:0,manualGainDb:0,
   effects:DEFAULT_EFFECTS.map(x=>({...x}))

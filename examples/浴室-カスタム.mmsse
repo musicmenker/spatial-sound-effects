@@ -1,0 +1,74 @@
+{
+  "format": "mmsse-preset-v1",
+  "schemaVersion": 1,
+  "id": "custom-bathroom-example",
+  "title": "浴室（配布サンプル）",
+  "en": "浴室（配布サンプル）",
+  "description": "既存の浴室プリセットを用いたサンプル",
+  "author": "MusicMenker",
+  "category": "追加",
+  "irName": "",
+  "settings": {
+    "masterDb": 0,
+    "mix": 100,
+    "splitReverb": true,
+    "protectHighs": true,
+    "splitDistance": true,
+    "highLossIntentional": false,
+    "dryLevel": 100,
+    "wetLevel": 40,
+    "distanceLevelDb": 0,
+    "autoGain": true,
+    "manualGainDb": 0,
+    "effects": [
+      {
+        "id": "filter",
+        "enabled": true,
+        "highpass": 100,
+        "lowpass": 16000
+      },
+      {
+        "id": "eq",
+        "enabled": true,
+        "low": -2,
+        "mid": 2,
+        "high": 3
+      },
+      {
+        "id": "reverb",
+        "enabled": true,
+        "decay": 2.1,
+        "predelay": 16,
+        "wet": 53
+      },
+      {
+        "id": "delay",
+        "enabled": true,
+        "time": 84,
+        "feedback": 11,
+        "wet": 13
+      },
+      {
+        "id": "distortion",
+        "enabled": false,
+        "amount": 18,
+        "wet": 25
+      },
+      {
+        "id": "distance",
+        "enabled": false,
+        "muffle": 40,
+        "far": 0,
+        "attenuation": 6
+      },
+      {
+        "id": "surround",
+        "enabled": false,
+        "mode": "wide",
+        "width": 65,
+        "speed": 0.23,
+        "depth": 75
+      }
+    ]
+  }
+}

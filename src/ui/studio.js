@@ -45,7 +45,7 @@ export function studio(){return {
   language:'ja',
   presets:PRESETS,categories:CATEGORIES,search:'',category:'すべて',presetId:'basement',
   effects:cloneSettings(DEFAULT_SETTINGS).effects,
-  masterDb:-1,mix:100,normalize:false,bitDepth:'16',sampleRate:'source',
+  masterDb:-1,mix:100,normalize:false,bitDepth:'24',sampleRate:'source',
   selectedTab:'effects',selectedEffect:'reverb',
   hasAudio:false,audioName:'',duration:0,position:0,playing:false,
   sourceFile:null,irFile:null,irName:'',
@@ -137,11 +137,13 @@ export function studio(){return {
   },
   async fromAudioInput(ev){await this.loadAudio(ev.target.files?.[0]);ev.target.value='';},
   async loadAudio(file){
-    if(!file)return;
-    if(file.size>220*1024*1024){this.notify('音源が大きすぎます（上限220MB）。','error');return;}
+    if(!file)return false;
+    if(file.size>220*1024*1024){this.notify('音源が大きすぎます（上限220MB）。','error');return false;}
     this.busy=true;this.busyMessage='音声をデコードしています…';
     try{
       const buffer=await engine.decode(file);
+      if(this.isWorkCancelled?.())return false;
+      this.lockWork?.('読み込んだ音声を適用中');
       await engine.setAudioBuffer(buffer);
       this.sourceFile=file;
       this.audioName=file.name;
@@ -154,8 +156,9 @@ export function studio(){return {
       await engine.configure(this.makeSettings());
       await this.persist(true);
       this.notify(`${file.name} を読み込みました。`,'success');
-    }catch(err){this.notify(`音声の読み込みに失敗: ${err.message}`,'error');}
-    finally{this.busy=false;this.busyMessage='';}
+      return true;
+    }catch(err){this.notify(`音声の読み込みに失敗: ${err.message}`,'error');return false;}
+    finally{if(!this._workController){this.busy=false;this.busyMessage='';}}
   },
   async loadDemo(){
     this.busy=true;this.busyMessage='デモ音源を生成しています…';

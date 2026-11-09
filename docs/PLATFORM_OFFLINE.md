@@ -17,3 +17,7 @@
 **Offline test procedure:** With the app freshly installed and network disabled: launch → import source file → choose preset → use all three switches → generate preview → listen to processed audio → save WAV → export `.sse.zip` → close and re-open project. Repeat on all supported OS / CPU architectures.
 
 **Content Security Policy limitation:** Alpine.js's standard runtime evaluates directives dynamically, so the Tauri WebView configuration currently includes `script-src 'unsafe-eval'` for compatibility. This is a limited security exception, not a claim of hardened CSP. No remote HTML or JavaScript is loaded by the app; future CSP tightening requires migrating to a compatible expression interpreter (e.g. Alpine CSP build) and repeating UI regressions.
+
+**Windows x64 Portable:** The `MusicMenker.portable` marker next to the EXE redirects the WebView2 profile (including IndexedDB) to `app-data/webview2/` beside the EXE. Write access is mandatory. The system WebView2 Runtime is not bundled. Installed and portable copies intentionally have separate storage.
+
+**Linux tar.gz Portable:** A native ELF and a `run.sh` launcher are provided with dependency diagnostics. This is not a self-contained universal build; the host supplies WebKitGTK 4.1 and related libraries. The archive does not redirect the standard user data location. Fedora RPM and Arch pacman builds have distribution-specific dependencies.

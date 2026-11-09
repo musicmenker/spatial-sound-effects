@@ -4,7 +4,7 @@ const paths=[];
 async function collect(dir){
   for(const f of await readdir(dir,{withFileTypes:true})){
     if(f.isDirectory())await collect(`${dir}/${f.name}`);
-    else if(f.name.endsWith('.js'))paths.push(`${dir}/${f.name}`);
+    else if(/\.(?:js|mjs)$/.test(f.name))paths.push(`${dir}/${f.name}`);
   }
 }
 await collect('src');await collect('tests');await collect('scripts');

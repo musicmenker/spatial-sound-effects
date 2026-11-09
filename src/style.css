@@ -135,3 +135,24 @@ strong{font-weight:650}.muted,.help-note,.transport-description,.brand-meta{colo
  .wave-title button:nth-of-type(1){grid-column:2;grid-row:2}
  .wave-title button:nth-of-type(2){grid-column:3;grid-row:2}
 }
+/* v0.0.3.0 — compact MusicMenker preset and progress controls */
+.preset-management,.compare-options{border-top:1px solid var(--mm-border);padding:10px 0;margin-top:8px}
+.preset-header,.compare-heading{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.preset-header small{color:var(--mm-muted);font-size:12px}
+.preset-unsaved{font-size:12px;font-weight:700;border:1px solid var(--mm-text);padding:1px 5px}
+.preset-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-bottom:7px}
+.preset-buttons button{font-size:12px;padding:6px 4px;min-width:0}
+.compare-options .inline-actions{gap:6px}
+.compare-heading .muted{font-size:12px}
+.mm-progress{display:block;width:100%;height:13px;accent-color:#555;margin:7px 0;border:1px solid #999}
+.mm-progress::-webkit-progress-value{background:#555}
+.mm-progress::-moz-progress-bar{background:#555}
+.mm-progress-indeterminate{border:1px solid var(--mm-border);background:var(--mm-control);height:13px;overflow:hidden;position:relative;margin:7px 0}
+.mm-progress-indeterminate span{display:block;position:absolute;top:0;bottom:0;left:0;width:25%;background:#555;animation:mm-progress-move 1.6s ease-in-out infinite alternate}
+@keyframes mm-progress-move{from{transform:translateX(0)}to{transform:translateX(300%)}}
+.progress-caption{font:12px/1.4 ui-monospace,monospace;text-align:right}
+.dialog-actions{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.mm-dialog input[type=text]{width:100%;margin-top:5px}
+.work-status{border-top:1px solid var(--mm-border);padding:6px 0;font-size:12px;color:var(--mm-muted)}
+@media(max-width:380px){.preset-buttons{grid-template-columns:1fr 1fr}.dialog-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.mm-progress-indeterminate span{animation:none;width:50%;background:#555}}

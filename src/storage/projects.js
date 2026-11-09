@@ -28,7 +28,7 @@ export function readProject(data){
   if(!validate(data))throw new Error('プロジェクト形式が正しくありません: '+ajv.errorsText(validate.errors));
   return {...data,settings:enforceSettings(data.settings)};
 }
-export async function zipProject(project,sourceFile=null,irFile=null){
+export async function zipProject(project,sourceFile=null,irFile=null,onProgress=()=>{}){
   const zip=new JSZip();
   const manifest=structuredClone(project);
   manifest.assets={};
@@ -45,7 +45,7 @@ export async function zipProject(project,sourceFile=null,irFile=null){
     manifest.assets.ir=path;
   }
   zip.file('project.json',JSON.stringify(manifest,null,2));
-  return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:2}});
+  return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:2}},onProgress);
 }
 export async function unzipProject(blob){
   const zip=await JSZip.loadAsync(blob,{checkCRC32:false});
@@ -65,6 +65,7 @@ export async function unzipProject(blob){
 }
 const db=new Dexie('SpatialSoundEffects-v1');
 db.version(1).stores({drafts:'key',assets:'key'});
+db.version(2).stores({drafts:'key',assets:'key',customPresets:'id'});
 export async function saveDraft(project,source,ir,includeAssets=false){
   await db.drafts.put({key:'latest',project});
   if(includeAssets){
@@ -82,3 +83,8 @@ export async function loadDraft(){
   return {project:readProject(draft.project),source:source?.file||null,ir:ir?.file||null};
 }
 export async function deleteDraft(){await db.transaction('rw',db.drafts,db.assets,()=>Promise.all([db.drafts.clear(),db.assets.clear()]));}
+
+// Custom presets are a separate, persistent collection: project drafts are untouched.
+export async function listCustomPresets(){return db.customPresets.toArray();}
+export async function putCustomPreset(preset){await db.customPresets.put(structuredClone(preset));}
+export async function removeCustomPreset(id){await db.customPresets.delete(id);}
