@@ -1,0 +1,220 @@
+name: MusicMenker multi-platform distribution
+
+'on':
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install project dependencies
+        shell: bash
+        run: |
+          if [[ -s package-lock.json ]]; then npm ci; else echo 'WARNING: package-lock.json missing; create and commit it'; npm install; fi
+      - run: npm audit --audit-level=low
+      - run: npm run check:syntax
+      - run: npm run check:versions
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:offline
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+          if-no-files-found: error
+
+  linux-deb-appimage:
+    needs: web
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2
+      - name: Install frontend dependencies
+        run: if test -s package-lock.json; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --bundles deb,appimage --ci
+      - run: bash scripts/package-linux-portable.sh
+      - run: node scripts/collect-artifacts.mjs --platform linux --arch x64 --formats deb,appimage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-linux-standard
+          path: release/*
+          if-no-files-found: error
+
+  linux-rpm:
+    needs: web
+    runs-on: ubuntu-24.04
+    container: fedora:43
+    steps:
+      - name: Install Fedora build prerequisites
+        run: |
+          dnf install -y git ca-certificates nodejs npm rust cargo gcc gcc-c++ make pkgconf-pkg-config webkit2gtk4.1-devel openssl-devel curl wget file libappindicator-gtk3-devel librsvg2-devel libxdo-devel patchelf rpm-build
+      - uses: actions/checkout@v4
+      - name: Install frontend dependencies
+        run: if test -s package-lock.json; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --bundles rpm --ci
+      - run: node scripts/collect-artifacts.mjs --platform linux --arch x64 --formats rpm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-linux-rpm
+          path: release/*.rpm
+          if-no-files-found: error
+
+  linux-arch:
+    needs: web
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    steps:
+      - name: Install Arch build prerequisites
+        run: |
+          pacman -Syu --noconfirm --needed git ca-certificates shadow util-linux nodejs npm rust cargo base-devel webkit2gtk-4.1 openssl curl wget file libappindicator librsvg xdotool patchelf pkgconf
+      - uses: actions/checkout@v4
+      - name: Install frontend dependencies
+        run: if test -s package-lock.json; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --no-bundle --ci
+      - name: Generate native pacman package as an unprivileged user
+        shell: bash
+        run: |
+          useradd -m musicmenker-builder
+          mkdir -p release
+          chown musicmenker-builder:musicmenker-builder release
+          runuser -u musicmenker-builder -- bash scripts/package-arch.sh
+          test -n "$(find release -maxdepth 1 -name '*.pkg.tar.zst' -size +0c -print -quit)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-linux-arch
+          path: release/*.pkg.tar.zst
+          if-no-files-found: error
+
+  windows:
+    needs: web
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install frontend dependencies
+        shell: bash
+        run: if [[ -s package-lock.json ]]; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --bundles nsis --ci
+      - run: node scripts/package-windows-portable.mjs
+      - run: node scripts/collect-artifacts.mjs --platform windows --arch x64 --formats nsis
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-windows-x64
+          path: release/*
+          if-no-files-found: error
+
+  windows-offline-installer:
+    needs: web
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install frontend dependencies
+        shell: bash
+        run: if [[ -s package-lock.json ]]; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --bundles nsis --config src-tauri/tauri.offline-windows.conf.json --ci
+      - run: node scripts/collect-artifacts.mjs --platform windows --arch x64 --formats nsis --mode offline
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-windows-offline
+          path: release/*
+          if-no-files-found: error
+
+  macos:
+    needs: web
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            arch: x64
+            target: x86_64-apple-darwin
+          - os: macos-15
+            arch: arm64
+            target: aarch64-apple-darwin
+          - os: macos-15
+            arch: universal
+            target: universal-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - name: Install frontend dependencies
+        run: if test -s package-lock.json; then npm ci; else npm install; fi
+      - run: npm run icons
+      - run: npm run tauri -- build --target ${{ matrix.target }} --bundles dmg --ci
+      - run: node scripts/collect-artifacts.mjs --platform macos --arch ${{ matrix.arch }} --formats dmg --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution-macos-${{ matrix.arch }}
+          path: release/*.dmg
+          if-no-files-found: error
+
+  release-draft:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [web, linux-deb-appimage, linux-rpm, linux-arch, windows, windows-offline-installer, macos]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: distribution-*
+          path: release
+          merge-multiple: true
+      - name: Check all deliverables and git tag
+        run: node scripts/verify-release.mjs --dir release --tag '${{ github.ref_name }}'
+      - name: Create release checksums
+        shell: bash
+        run: |
+          cd release
+          find . -maxdepth 1 -type f ! -name 'SHA256SUMS' -printf '%f\n' | LC_ALL=C sort | while IFS= read -r file; do sha256sum -- "$file"; done > SHA256SUMS
+      - name: Upload as draft (not a verified Release)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if gh release view '${{ github.ref_name }}' >/dev/null 2>&1; then
+            test "$(gh release view '${{ github.ref_name }}' --json isDraft --jq '.isDraft')" = true || { echo 'Refusing to modify an already published release' >&2; exit 1; }
+            gh release upload '${{ github.ref_name }}' release/* --clobber
+          else
+            gh release create '${{ github.ref_name }}' release/* --draft --title 'MusicMenker Spatial Sound Effects ${{ github.ref_name }}' --notes 'Build artifacts; OS-level runtime and audio tests and macOS signing/notarization require release verification.'
+          fi
